@@ -5,6 +5,8 @@ run:
 	kubectl apply -f front-service.yaml
 	kubectl apply -f api-service.yaml 
 	kubectl apply -f db-service.yaml
+	kubectl apply -f secret.yaml
+	kubectl apply -f pvc.yaml
 
 fill-db:
 	kubectl apply -f data-script-deployment.yaml
