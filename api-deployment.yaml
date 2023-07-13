@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.20.0 (f3d54d784)
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  selector:
+    matchLabels:
+      io.kompose.network/myapp: "true"
+      io.kompose.service: api
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.20.0 (f3d54d784)
+      labels:
+        io.kompose.network/myapp: "true"
+        io.kompose.service: api
+    spec:
+      containers:
+      - image: olgatyshkevych/quotes-back:latest
+        name: api
+        ports:
+        - containerPort: 3000
+        env:
+        - name: SQLALCHEMY_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: back-scrt
+              key: SQLALCHEMY_DATABASE_URI
+        resources: {}
+      restartPolicy: Always
+status: {}

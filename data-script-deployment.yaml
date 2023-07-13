@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.20.0 (f3d54d784)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: data-script
+  name: data-script
+spec:
+  selector:
+    matchLabels:
+      io.kompose.network/myapp: "true"
+      io.kompose.service: data-script
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.20.0 (f3d54d784)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/myapp: "true"
+        io.kompose.service: data-script
+    spec:
+      initContainers:
+      - name: init-container
+        image: olgatyshkevych/quotes-data-script:latest
+        command: ['sh', '-c', "apk update && apk add mysql-client; until mysql -h ${MYSQL_DB_HOST} -u ${MYSQL_USER} -p${MYSQL_USER_PASSWORD} -e 'show databases;'; do echo waiting for mydb; sleep 2; done"]
+        env:
+        - name: MYSQL_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: data-script-scrt
+              key: MYSQL_DB_HOST
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: data-script-scrt
+              key: MYSQL_USER
+        - name: MYSQL_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: data-scrt
+              key: MYSQL_ROOT_PASSWORD
+      containers:
+      - image: olgatyshkevych/quotes-data-script:latest
+        name: data-script
+        env:
+        - name: MYSQL_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: data-script-scrt
+              key: MYSQL_DB_HOST
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: data-script-scrt
+              key: MYSQL_USER
+        - name: MYSQL_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: data-scrt
+              key: MYSQL_ROOT_PASSWORD
+        resources: {}
+      restartPolicy: Always
+status: {}
